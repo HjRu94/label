@@ -10,7 +10,9 @@ class ImageLabeler():
 
     def event(self):
         """Handle processing events."""
-        pass
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                self.running = False
 
     def update(self):
         """Handle updating the screen."""
@@ -30,7 +32,6 @@ class ImageLabeler():
             self.update()
             self.draw()
             pg.display.update()
-            pg.clock.tick(60)
         pg.quit()
 
 

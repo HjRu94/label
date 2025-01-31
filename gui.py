@@ -27,6 +27,12 @@ class ImageLabeler():
         # Fill the screen with white color
         self.screen.fill((255, 255, 255))
 
+        # draw current image
+        image = self.image_manager.load_image()
+        image = image.transpose((1, 0, 2))
+        image = pg.surfarray.make_surface(image)
+        self.screen.blit(image, (0, 0))
+
         pg.display.flip()
 
     def loop(self):

@@ -5,6 +5,30 @@ import cv2
 import numpy as np
 
 
+class BoundingBox:
+    """Class to manage bounding boxes."""
+
+    def __init__(self, x_min: int, y_min: int, x_max: int, y_max: int, class_id: int):
+        self.x_min = x_min
+        self.y_min = y_min
+        self.x_max = x_max
+        self.y_max = y_max
+        self.class_id = class_id
+
+    def to_yolo_format(self, image_width: int, image_height: int) -> tuple:
+        """Convert bounding box to YOLO format."""
+        x_center = (self.x_min + self.x_max) / 2
+        y_center = (self.y_min + self.y_max) / 2
+        width = self.x_max - self.x_min
+        height = self.y_max - self.y_min
+
+        x_center /= image_width
+        y_center /= image_height
+        width /= image_width
+        height /= image_height
+
+        return x_center, y_center, width, height, self.class_id
+
 class ClassDescription:
     """Class to manage class names."""
 

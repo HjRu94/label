@@ -1,17 +1,18 @@
 from typing import List
 
-from active_learning import ImageManager, BoundingBox
+from active_learning import ImageManager, BoundingBox, DatasetManager
 
 import pygame as pg
 
 
 class ImageLabeler():
-    def __init__(self, image_manager: ImageManager):
+    def __init__(self, image_manager: ImageManager, dataset_manager: DatasetManager):
         pg.init()
         self.screen_size = (800, 600)
         self.screen = pg.display.set_mode(self.screen_size)
         self.running = True
         self.image_manager = image_manager
+        self.dataset_manager = dataset_manager
 
         self.bounding_boxes: List[BoundingBox] = []  # List to store bounding boxes
         self.drawing = False  # Track if we are drawing a box
@@ -31,14 +32,28 @@ class ImageLabeler():
             elif event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1 and self.start_pos:
                     end_pos = event.pos
-                    bounxing_box = BoundingBox(self.start_pos[0], self.start_pos[1], end_pos[0], end_pos[1], 0)
-                    self.bounding_boxes.append(bounxing_box)
+                    x1, y1 = self.start_pos
+                    x2, y2 = end_pos
+                    x, y = min(x1, x2), min(y1, y2)
+                    width, height = abs(x2 - x1), abs(y2 - y1)
+                    self.bounding_boxes.append(BoundingBox(x, y, x + width, y + height, 0))
                     self.drawing = False
                     self.start_pos = None
                     self.current_box = None
             elif event.type == pg.MOUSEMOTION and self.drawing:
                 end_pos = event.pos
-                self.current_box = (*self.start_pos, end_pos[0] - self.start_pos[0], end_pos[1] - self.start_pos[1])
+                x1, y1 = self.start_pos
+                x2, y2 = end_pos
+                x, y = min(x1, x2), min(y1, y2)
+                width, height = abs(x2 - x1), abs(y2 - y1)
+                self.current_box = (x, y, width, height)
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_s:
+                    image = self.image_manager.load_image()
+                    self.dataset_manager.save_image(image, self.bounding_boxes)
+                    self.image_manager.next_image(remove=False)
+                    self.bounding_boxes = []
+
 
     def update(self):
         """Handle updating the screen."""
@@ -56,7 +71,7 @@ class ImageLabeler():
 
         # Draw saved bounding boxes
         for box in self.bounding_boxes:
-            box = pg.Rect(box.x_min, box.y_min, box.x_max - box.x_min, box.y_max - box.y_min)
+            box = (box.x_min, box.y_min, box.x_max - box.x_min, box.y_max - box.y_min)
             pg.draw.rect(self.screen, (255, 0, 0), box, 2)
 
         # Draw the current box if in progress

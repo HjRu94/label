@@ -14,7 +14,7 @@ def label_images():
     dataset_manager.create_folder_structure()
     image_manager = ImageManager(image_dir)
 
-    my_gui = gui.ImageLabeler(image_manager)
+    my_gui = gui.ImageLabeler(image_manager, dataset_manager)
     my_gui.loop()
 
 

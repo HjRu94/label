@@ -8,8 +8,13 @@ __pycache__/
 
 # dataset folder
 dataset/
+
 # image folder
 images/
+
+# env folder
+env/
+myenv/
 
 # Distribution / packaging
 .Python

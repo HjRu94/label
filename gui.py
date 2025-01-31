@@ -1,12 +1,16 @@
+from active_learning import ImageManager
+
 import pygame as pg
 
 
 class ImageLabeler():
-    def __init__(self):
+    def __init__(self, image_manager: ImageManager):
         pg.init()
         self.screen_size = (800, 600)
         self.screen = pg.display.set_mode(self.screen_size)
         self.running = True
+
+        self.image_manager = image_manager
 
     def event(self):
         """Handle processing events."""

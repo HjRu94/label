@@ -1,5 +1,9 @@
 import os
 
+import cv2
+
+import numpy as np
+
 
 class ClassDescription:
     """Class to manage class names."""
@@ -63,6 +67,35 @@ class DatasetManager:
                 f.write('names: ')
                 f.write(str(self.class_description.class_names))
                 f.write('\n')
+
+
+class ImageManager:
+    """Class to manage unlabelled images."""
+
+    def __init__(self, folder_path: str):
+        self.allowed_extensions = ['.jpg', '.jpeg', '.png']
+        self.folder_path = folder_path
+        self.image_paths = self.load_images(folder_path)
+        self.current_image_index = 0
+
+        self.cache = ('', None)
+
+    def load_images(self, folder_path: str):
+        """Load all images from the image folder recursively."""
+        image_paths = []
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                if os.path.splitext(file)[1].lower() in self.allowed_extensions:
+                    image_paths.append(os.path.join(root, file))
+        return image_paths
+
+    def load_image(self) -> np.ndarray:
+        """Load the current image from file."""
+        image_path = self.image_paths[self.current_image_index]
+        if image_path == self.cache[0]:
+            return self.cache[1]
+        image = cv2.imread(image_path)
+        return image
 
 
 if __name__ == '__main__':

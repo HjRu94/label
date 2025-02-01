@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from active_learning import BoundingBox, DatasetManager, ImageManager
+from dataset_manager import BoundingBox, DatasetManager, ImageManager
 
 import numpy as np
 

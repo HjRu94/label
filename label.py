@@ -1,4 +1,4 @@
-from active_learning import ClassDescription, DatasetManager, ImageManager
+from dataset_manager import ClassDescription, DatasetManager, ImageManager
 
 import gui
 

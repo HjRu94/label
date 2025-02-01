@@ -9,6 +9,7 @@ import pygame as pg
 
 class ColorManager:
     """Class to manage colors."""
+
     def __init__(self):
         """Initialize colors."""
         TURQUOISE = (0x40, 0xE0, 0xD0)
@@ -190,11 +191,13 @@ class ImageLabeler:
         next_button_rect = pg.Rect(self.screen_size[0] - button_width - 10, self.screen_size[1] - button_height - 10, button_width, button_height)
 
         if prev_button_rect.collidepoint(pos):
-            print('Previous button clicked')
+            self.dataset_manager.remove_last_image()
+            self.image_manager.previous_image()
+
         elif next_button_rect.collidepoint(pos):
             self.dataset_manager.save_image(self.image_manager.load_image(), self.bounding_boxes)
             self.bounding_boxes = []
-            self.image_manager.next_image(remove=False)
+            self.image_manager.next_image()
             self.initialize_image_pos()
 
     def is_mouse_on_image(self, pos: Tuple[int, int]) -> bool:

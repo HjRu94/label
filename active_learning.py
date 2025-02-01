@@ -150,6 +150,7 @@ class DatasetManager:
         """Remove the last image from the dataset."""
         if len(self.last_image_paths) == 0 or len(self.last_lable_paths) == 0:
             print('No images to remove')
+            return
         self.image_number -= 1
         image_path = self.last_image_paths.pop()
         label_path = self.last_lable_paths.pop()

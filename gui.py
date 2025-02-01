@@ -123,8 +123,8 @@ class ImageLabeler:
                     self.check_navigation_click(self.mouse_pos)
                 if event.type == pg.MOUSEWHEEL:
                     self.menu_scroll_offset -= event.y * 20
-                    self.menu_scroll_offset = max(0, self.menu_scroll_offset)
                     self.menu_scroll_offset = min(self.menu_scroll_offset, len(self.buttons) * 60 - self.screen_size[1] + 70)
+                    self.menu_scroll_offset = max(0, self.menu_scroll_offset)
                 continue
 
             if event.type == pg.MOUSEBUTTONDOWN:

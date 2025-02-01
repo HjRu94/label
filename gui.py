@@ -226,14 +226,27 @@ class ImageLabeler:
         """Draw the image and bounding boxes."""
         self.screen.fill((255, 255, 255))
 
-        image = self.image_manager.load_image()
-        visible_surface = pg.surfarray.make_surface(image.transpose((1, 0, 2)))
-        visible_surface = pg.transform.scale(
-            visible_surface,
-            (int(image.shape[1] * self.scale), int(image.shape[0] * self.scale))
-        )
-        self.screen.blit(visible_surface, self.offset)
-
+        image = self.image_manager.load_image()  # Assuming NumPy array (H, W, 3)
+        img_height, img_width = image.shape[:2]
+        # Calculate visible area in the image's coordinate system
+        left = max(0, int((0 - self.offset[0]) / self.scale))
+        top = max(0, int((0 - self.offset[1]) / self.scale))
+        right = min(img_width, int((self.screen_size[0] - self.offset[0]) / self.scale + 1))
+        bottom = min(img_height, int((self.screen_size[1] - self.offset[1]) / self.scale + 1))
+        # Crop the visible region of the image
+        visible_image = image[top:bottom, left:right]
+        # Convert cropped image to Pygame surface
+        if visible_image.size > 0:  # Ensure there's something to draw
+            visible_surface = pg.surfarray.make_surface(visible_image.transpose((1, 0, 2)))
+            visible_surface = pg.transform.scale(
+                visible_surface,
+                (int((right - left) * self.scale), int((bottom - top) * self.scale))
+            )
+            # Draw the cropped and scaled image at the correct offset
+            self.screen.blit(visible_surface, (
+                self.offset[0] + left * self.scale,
+                self.offset[1] + top * self.scale
+            ))
         for box in self.bounding_boxes:
             rect = (
                 int(box.x_min * self.scale + self.offset[0]),

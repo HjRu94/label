@@ -28,9 +28,9 @@ class ImageLabeler:
         self.last_mouse_pos = None
 
         # Button setup
-        self.buttons = [f"Animal {i+1}" for i in range(20)]
+        self.buttons = self.dataset_manager.class_description.class_names
         self.current_class = 0
-        self.class_counts = [0 for _ in range(20)]
+        self.class_counts = [0 for _ in range(len(self.buttons))]
         self.menu_scroll_offset = 0
 
     def apply_transform(self, pos: Tuple[int, int]) -> Tuple[float, float]:
@@ -137,7 +137,10 @@ class ImageLabeler:
         if prev_button_rect.collidepoint(pos):
             print("Previous button clicked")
         elif next_button_rect.collidepoint(pos):
-            print("Next button clicked")
+            self.dataset_manager.save_image(self.image_manager.load_image(), self.bounding_boxes)
+            self.bounding_boxes = []
+            self.image_manager.next_image(remove=False)
+            self.initialize_image_pos()
 
     def is_mouse_on_image(self, pos: Tuple[int, int]) -> bool:
         image = self.image_manager.load_image()
@@ -205,7 +208,7 @@ class ImageLabeler:
             pg.draw.rect(self.screen, color, button_rect)
 
             font = pg.font.SysFont(None, 24)
-            text_surface = font.render(f"{label} ({self.class_counts[i]})", True, (0, 0, 0))
+            text_surface = font.render(f"{i} {label} ({self.class_counts[i]})", True, (0, 0, 0))
             text_rect = text_surface.get_rect(center=button_rect.center)
             self.screen.blit(text_surface, text_rect)
 

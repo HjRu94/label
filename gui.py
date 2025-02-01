@@ -48,12 +48,12 @@ class ColorManager:
 class ImageLabeler:
     """Class for handeling the gui for labeling images."""
 
-    def __init__(self, image_manager: ImageManager, dataset_manager: DatasetManager):
+    def __init__(self, image_manager: ImageManager, dataset_manager: DatasetManager, screen_size=(800, 800), default_scale=1.0):
         """Initialize the image labeler."""
         pg.init()
         self.menu_height = 200
         self.menu_width = 300
-        self.screen_size = (800 + self.menu_width, 800)
+        self.screen_size = screen_size
         self.screen = pg.display.set_mode(self.screen_size)
         self.running = True
         self.image_manager = image_manager
@@ -64,6 +64,7 @@ class ImageLabeler:
         self.start_pos = None
         self.current_box = None
 
+        self.default_scale = default_scale
         self.scale = 1.0
         self.offset = [0, 0]
         self.initialize_image_pos()
@@ -91,11 +92,11 @@ class ImageLabeler:
 
     def initialize_image_pos(self):
         """Initialize the scale and offset of the image."""
-        self.scale = 1.0
+        self.scale = self.default_scale
         image = self.image_manager.load_image()
         self.offset = [
-            (self.screen_size[0] - self.menu_width) / 2 - image.shape[1] / 2,
-            (self.screen_size[1] - self.menu_height) / 2 - image.shape[0] / 2,
+            (self.screen_size[0] - self.menu_width) / 2 - image.shape[1] * self.scale / 2,
+            (self.screen_size[1] - self.menu_height) / 2 - image.shape[0] * self.scale / 2,
         ]
 
     def event(self):

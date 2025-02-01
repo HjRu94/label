@@ -38,11 +38,12 @@ class ImageLabeler:
 
     def event(self):
         """Handle processing events."""
+        self.mouse_pos = pg.mouse.get_pos()
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.running = False
             elif event.type == pg.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button for drawing
+                if event.button == 1 and self.mouse_pos[0] > self.offset[0] and self.mouse_pos[0] < self.offset[0] + self.image_manager.load_image().shape[1] and self.mouse_pos[1] > self.offset[1] and self.mouse_pos[1] < self.offset[1] + self.image_manager.load_image().shape[0]:
                     self.drawing = True
                     self.start_pos = self.apply_transform(event.pos)
                     self.current_box = None
@@ -52,6 +53,8 @@ class ImageLabeler:
             elif event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1 and self.start_pos:
                     end_pos = self.apply_transform(event.pos)
+                    end_pos = (max(0, end_pos[0]), max(0, end_pos[1]))
+                    end_pos = (min(self.image_manager.load_image().shape[1], end_pos[0]), min(self.image_manager.load_image().shape[0], end_pos[1]))
                     x1, y1 = self.start_pos
                     x2, y2 = end_pos
                     x, y = min(x1, x2), min(y1, y2)
@@ -65,6 +68,8 @@ class ImageLabeler:
             elif event.type == pg.MOUSEMOTION:
                 if self.drawing and self.start_pos:
                     end_pos = self.apply_transform(event.pos)
+                    end_pos = (max(0, end_pos[0]), max(0, end_pos[1]))
+                    end_pos = (min(self.image_manager.load_image().shape[1], end_pos[0]), min(self.image_manager.load_image().shape[0], end_pos[1]))
                     x1, y1 = self.start_pos
                     x2, y2 = end_pos
                     x, y = min(x1, x2), min(y1, y2)
@@ -77,7 +82,7 @@ class ImageLabeler:
                     self.last_mouse_pos = event.pos
 
             if event.type == pg.MOUSEWHEEL:
-                mouse_x, mouse_y = pg.mouse.get_pos()
+                mouse_x, mouse_y = self.mouse_pos
                 pre_zoom_mouse_pos = self.apply_transform((mouse_x, mouse_y))
 
                 if event.y > 0:  # Scroll up to zoom in
@@ -111,6 +116,7 @@ class ImageLabeler:
         image = self.image_manager.load_image()  # Assuming NumPy array (H, W, 3)
         img_height, img_width = image.shape[:2]
 
+
         # Calculate visible area in the image's coordinate system
         left = max(0, int((0 - self.offset[0]) / self.scale))
         top = max(0, int((0 - self.offset[1]) / self.scale))
@@ -133,6 +139,13 @@ class ImageLabeler:
                 self.offset[0] + left * self.scale,
                 self.offset[1] + top * self.scale
             ))
+
+        # Draw cursor as a cross and dotted lines to the ends of the image, not the screen
+        mouse_x, mouse_y = self.mouse_pos
+        mouse_x = max(self.offset[0], min(self.offset[0] + img_width * self.scale, mouse_x))
+        mouse_y = max(self.offset[1], min(self.offset[1] + img_height * self.scale, mouse_y))
+        pg.draw.line(self.screen, (0, 0, 0), (self.offset[0], mouse_y), (self.offset[0] + img_width * self.scale, mouse_y), 2)
+        pg.draw.line(self.screen, (0, 0, 0), (mouse_x, self.offset[1]), (mouse_x, self.offset[1] + img_height * self.scale), 2)
 
         # Draw saved bounding boxes (only those visible on screen)
         for box in self.bounding_boxes:
@@ -157,6 +170,10 @@ class ImageLabeler:
                 int(self.current_box[3] * self.scale),
             )
             pg.draw.rect(self.screen, (0, 255, 0), rect, 2)
+        
+
+
+
 
         pg.display.flip()
 

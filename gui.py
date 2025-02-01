@@ -1,8 +1,47 @@
 from typing import List, Tuple
 
-from active_learning import ImageManager, BoundingBox, DatasetManager
+from active_learning import BoundingBox, DatasetManager, ImageManager
+
+import numpy as np
 
 import pygame as pg
+
+
+class ColorManager:
+    """Class to manage colors."""
+    def __init__(self):
+        """Initialize colors."""
+        TURQUOISE = (0x40, 0xE0, 0xD0)
+        SOFT_CORAL = (0xFF, 0x6F, 0x61)
+        VIVID_SKY_BLUE = (0x00, 0xBF, 0xFF)
+        PLUM = (0xD4, 0x70, 0xA2)
+        APRICOT = (0xFB, 0xAE, 0x7E)
+        MEDIUM_AQUAMARINE = (0x66, 0xCD, 0xAA)
+        SALMON_PINK = (0xFF, 0x91, 0xA4)
+        SPRING_GREEN = (0x00, 0xFA, 0x9A)
+        LIGHT_GOLDENROD = (0xFA, 0xD6, 0x60)
+        COOL_LAVENDER = (0xB5, 0x9D, 0xDD)
+        SOFT_TANGERINE = (0xFF, 0xA0, 0x4C)
+        BRIGHT_PERIWINKLE = (0x8A, 0x9A, 0xE6)
+        TEAL_BLUE = (0x36, 0x9E, 0xB7)
+        CRISP_ROSE = (0xFF, 0x75, 0x8A)
+        MELON = (0xF7, 0x85, 0x6B)
+        MODERATE_LIME_GREEN = (0x9A, 0xCD, 0x32)
+        FRESH_CYAN = (0x00, 0xCF, 0xD0)
+        SOFT_AMBER = (0xFF, 0xC1, 0x07)
+        LILAC = (0xC8, 0xA2, 0xC8)
+        VIBRANT_MINT = (0x3E, 0xD8, 0x92)
+        self.colors = [TURQUOISE, SOFT_CORAL, VIVID_SKY_BLUE, PLUM, APRICOT, MEDIUM_AQUAMARINE, SALMON_PINK,
+                       SPRING_GREEN, LIGHT_GOLDENROD, COOL_LAVENDER, SOFT_TANGERINE, BRIGHT_PERIWINKLE, TEAL_BLUE,
+                       CRISP_ROSE, MELON, MODERATE_LIME_GREEN, FRESH_CYAN, SOFT_AMBER, LILAC, VIBRANT_MINT]
+        self.index_list = list(range(len(self.colors)))
+        np.random.shuffle(self.index_list)
+
+    def index_to_color(self, index: int) -> Tuple[int, int, int]:
+        """Get color from index."""
+        selected_index = index % len(self.colors)
+        selected_color = self.colors[self.index_list[selected_index]]
+        return selected_color
 
 
 class ImageLabeler:
@@ -30,6 +69,7 @@ class ImageLabeler:
         # Button setup
         self.buttons = self.dataset_manager.class_description.class_names
         self.current_class = 0
+        self.color_manager = ColorManager()
         self.class_counts = [0 for _ in range(len(self.buttons))]
         self.menu_scroll_offset = 0
 
@@ -177,7 +217,8 @@ class ImageLabeler:
                 int((box.x_max - box.x_min) * self.scale),
                 int((box.y_max - box.y_min) * self.scale),
             )
-            pg.draw.rect(self.screen, (255, 0, 0), rect, 2)
+            color = self.color_manager.index_to_color(box.class_id)
+            pg.draw.rect(self.screen, color, rect, 2)
 
         if self.current_box:
             rect = (

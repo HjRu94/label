@@ -6,7 +6,8 @@ import gui
 def label_images():
     image_dir = 'images'
     dataset_dir = 'dataset'
-    classes = ['cat', 'dog', 'bird']
+    classes = ['cat', 'dog', 'bird', 'fish', 'rabbit', 'hamster', 'turtle', 'horse', 'cow', 'pig',
+               'elephant', 'giraffe', 'zebra', 'bear', 'lion', 'tiger', 'wolf', 'fox', 'deer', 'monkey']
 
     class_descrition = ClassDescription(classes)
     dataset_manager = DatasetManager(dataset_dir, class_descrition)

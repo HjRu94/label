@@ -41,6 +41,7 @@ class ClassDescription:
         self.set_class_names(class_names)
 
     def set_class_names(self, class_names):
+        """Set the class names."""
         self.class_names = class_names
         self.n_classes = len(class_names)
         return self.n_classes

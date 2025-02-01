@@ -45,7 +45,10 @@ class ColorManager:
 
 
 class ImageLabeler:
+    """Class for handeling the gui for labeling images."""
+
     def __init__(self, image_manager: ImageManager, dataset_manager: DatasetManager):
+        """Initialize the image labeler."""
         pg.init()
         self.menu_height = 200
         self.menu_width = 300
@@ -74,10 +77,19 @@ class ImageLabeler:
         self.menu_scroll_offset = 0
 
     def apply_transform(self, pos: Tuple[int, int]) -> Tuple[float, float]:
+        """
+        Preforms transformation from screen to image coordinates.
+
+        Args:
+            pos: The position on the screen.
+        Returns:
+            The position on the image
+        """
         x, y = pos
         return (x - self.offset[0]) / self.scale, (y - self.offset[1]) / self.scale
 
     def initialize_image_pos(self):
+        """Initialize the scale and offset of the image."""
         self.scale = 1.0
         image = self.image_manager.load_image()
         self.offset = [
@@ -86,6 +98,7 @@ class ImageLabeler:
         ]
 
     def event(self):
+        """Handle events."""
         self.mouse_pos = pg.mouse.get_pos()
 
         for event in pg.event.get():
@@ -156,6 +169,7 @@ class ImageLabeler:
                     self.offset[1] = mouse_y - pre_zoom_mouse_pos[1] * self.scale
 
     def check_button_click(self, pos):
+        """Check if a button was clicked."""
         button_height = 50
         for i, label in enumerate(self.buttons):
             y_offset = 10 + i * (button_height + 10) - self.menu_scroll_offset
@@ -169,13 +183,14 @@ class ImageLabeler:
                 self.current_class = i
 
     def check_navigation_click(self, pos):
+        """Check if a navigation button was clicked."""
         button_width = 100
         button_height = 50
         prev_button_rect = pg.Rect(self.screen_size[0] - self.menu_width + 10, self.screen_size[1] - button_height - 10, button_width, button_height)
         next_button_rect = pg.Rect(self.screen_size[0] - button_width - 10, self.screen_size[1] - button_height - 10, button_width, button_height)
 
         if prev_button_rect.collidepoint(pos):
-            print("Previous button clicked")
+            print('Previous button clicked')
         elif next_button_rect.collidepoint(pos):
             self.dataset_manager.save_image(self.image_manager.load_image(), self.bounding_boxes)
             self.bounding_boxes = []
@@ -183,23 +198,27 @@ class ImageLabeler:
             self.initialize_image_pos()
 
     def is_mouse_on_image(self, pos: Tuple[int, int]) -> bool:
+        """Return True if the mouse is on the image."""
         image = self.image_manager.load_image()
-        return (
-            self.offset[0] <= pos[0] <= self.offset[0] + image.shape[1] * self.scale
-            and self.offset[1] <= pos[1] <= self.offset[1] + image.shape[0] * self.scale
-        )
+        left_bound = self.offset[0]
+        right_bound = self.offset[0] + image.shape[1] * self.scale
+        upper_bound = self.offset[1]
+        lower_bound = self.offset[1] + image.shape[0] * self.scale
+        left_right = left_bound <= pos[0] <= right_bound
+        upper_lower = upper_bound <= pos[1] <= lower_bound
+        return left_right and upper_lower
 
     def clamp_to_image_bounds(self, pos: Tuple[float, float]) -> Tuple[float, float]:
+        """Clamp the position to the image bounds."""
         image = self.image_manager.load_image()
+
         return (
             max(0, min(image.shape[1], pos[0])),
             max(0, min(image.shape[0], pos[1]))
         )
 
-    def update(self):
-        pass
-
     def draw(self):
+        """Draw the image and bounding boxes."""
         self.screen.fill((255, 255, 255))
 
         image = self.image_manager.load_image()
@@ -249,7 +268,7 @@ class ImageLabeler:
             pg.draw.rect(self.screen, color, button_rect)
 
             font = pg.font.SysFont(None, 24)
-            text_surface = font.render(f"{i} {label} ({self.class_counts[i]})", True, (0, 0, 0))
+            text_surface = font.render(f'{i} {label} ({self.class_counts[i]})', True, (0, 0, 0))
             text_rect = text_surface.get_rect(center=button_rect.center)
             self.screen.blit(text_surface, text_rect)
 
@@ -261,8 +280,8 @@ class ImageLabeler:
         pg.draw.rect(self.screen, (150, 150, 250), prev_button_rect)
         pg.draw.rect(self.screen, (150, 150, 250), next_button_rect)
 
-        prev_text = pg.font.SysFont(None, 24).render("Previous", True, (0, 0, 0))
-        next_text = pg.font.SysFont(None, 24).render("Next", True, (0, 0, 0))
+        prev_text = pg.font.SysFont(None, 24).render('Previous', True, (0, 0, 0))
+        next_text = pg.font.SysFont(None, 24).render('Next', True, (0, 0, 0))
 
         self.screen.blit(prev_text, prev_text.get_rect(center=prev_button_rect.center))
         self.screen.blit(next_text, next_text.get_rect(center=next_button_rect.center))
@@ -270,8 +289,8 @@ class ImageLabeler:
         pg.display.flip()
 
     def loop(self):
+        """Preforms the main loop."""
         while self.running:
             self.event()
-            self.update()
             self.draw()
         pg.quit()

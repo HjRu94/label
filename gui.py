@@ -108,11 +108,13 @@ class ImageLabeler:
 
             if self.mouse_pos[0] > self.screen_size[0] - self.menu_width:
                 if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                    self.check_button_click(self.mouse_pos)
+                    if self.mouse_pos[1] < self.screen_size[1] - 70:
+                        self.check_button_click(self.mouse_pos)
                     self.check_navigation_click(self.mouse_pos)
                 if event.type == pg.MOUSEWHEEL:
                     self.menu_scroll_offset -= event.y * 20
                     self.menu_scroll_offset = max(0, self.menu_scroll_offset)
+                    self.menu_scroll_offset = min(self.menu_scroll_offset, len(self.buttons) * 60 - self.screen_size[1] + 70)
                 continue
 
             if event.type == pg.MOUSEBUTTONDOWN:
@@ -277,6 +279,9 @@ class ImageLabeler:
 
         button_width = 100
         button_height = 50
+
+        pg.draw.rect(self.screen, (180, 180, 180), (self.screen_size[0] - self.menu_width, self.screen_size[1] - button_height - 20, self.menu_width, button_height + 20))
+
         prev_button_rect = pg.Rect(self.screen_size[0] - self.menu_width + 10, self.screen_size[1] - button_height - 10, button_width, button_height)
         next_button_rect = pg.Rect(self.screen_size[0] - button_width - 10, self.screen_size[1] - button_height - 10, button_width, button_height)
 

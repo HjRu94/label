@@ -78,6 +78,8 @@ class ImageLabeler:
         self.class_counts = [0 for _ in range(len(self.buttons))]
         self.menu_scroll_offset = 0
 
+        self.remove_boxes = False
+
     def apply_transform(self, pos: Tuple[int, int]) -> Tuple[float, float]:
         """
         Preforms transformation from screen to image coordinates.
@@ -106,6 +108,13 @@ class ImageLabeler:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.running = False
+            if event.type == pg.KEYDOWN:
+                # check for shift key
+                if event.key == pg.K_LSHIFT:
+                    self.remove_boxes = not self.remove_boxes
+            if event.type == pg.KEYUP:
+                if event.key == pg.K_LSHIFT:
+                    self.remove_boxes = not self.remove_boxes
 
             if self.mouse_pos[0] > self.screen_size[0] - self.menu_width:
                 if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
@@ -119,10 +128,17 @@ class ImageLabeler:
                 continue
 
             if event.type == pg.MOUSEBUTTONDOWN:
-                if event.button == 1 and self.is_mouse_on_image(event.pos):
-                    self.drawing = True
-                    self.start_pos = self.apply_transform(event.pos)
-                    self.current_box = None
+                if event.button == 1:
+                    if self.remove_boxes:
+                        for box in self.bounding_boxes:
+                            if self.is_point_inside(box, self.apply_transform(event.pos)):
+                                self.bounding_boxes.remove(box)
+                                self.class_counts[box.class_id] -= 1
+                                break
+                    else:
+                        self.drawing = True
+                        self.start_pos = self.apply_transform(event.pos)
+                        self.current_box = None
                 elif event.button == 3:
                     self.moving = True
                     self.last_mouse_pos = event.pos
@@ -171,6 +187,11 @@ class ImageLabeler:
 
                     self.offset[0] = mouse_x - pre_zoom_mouse_pos[0] * self.scale
                     self.offset[1] = mouse_y - pre_zoom_mouse_pos[1] * self.scale
+
+    def is_point_inside(self, box: BoundingBox, pos: Tuple[float, float]) -> bool:
+        """Check if a point is inside a bounding box."""
+        x, y = pos
+        return box.x_min <= x <= box.x_max and box.y_min <= y <= box.y_max
 
     def check_button_click(self, pos):
         """Check if a button was clicked."""

@@ -1,3 +1,5 @@
+import os
+
 from typing import List
 
 from dataset_manager import BoundingBox
@@ -10,7 +12,9 @@ from ultralytics import YOLO
 class ActiveLearningManager:
     def __init__(self, model_path: str = 'yolo11n.pt'):
 
-        self.model = YOLO(model_path)
+        self.model_dir = "models"
+        path = os.path.join(self.model_dir, model_path)
+        self.model = YOLO(path)
 
     def predict(self, image: np.array) -> List[BoundingBox]:
         predictions = self.model(image)[0]

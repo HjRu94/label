@@ -12,6 +12,9 @@ dataset/
 # image folder
 images/
 
+# models folder
+models/
+
 # env folder
 env/
 myenv/

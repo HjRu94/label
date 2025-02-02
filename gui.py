@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 from dataset_manager import BoundingBox, DatasetManager, ImageManager
+from active_learning import ActiveLearningManager
 
 import numpy as np
 
@@ -48,7 +49,7 @@ class ColorManager:
 class ImageLabeler:
     """Class for handeling the gui for labeling images."""
 
-    def __init__(self, image_manager: ImageManager, dataset_manager: DatasetManager, screen_size=(800, 800), default_scale=1.0):
+    def __init__(self, image_manager: ImageManager, dataset_manager: DatasetManager, active_learning_manager: ActiveLearningManager, screen_size=(800, 800), default_scale=1.0):
         """Initialize the image labeler."""
         pg.init()
         self.menu_height = 200
@@ -56,8 +57,10 @@ class ImageLabeler:
         self.screen_size = screen_size
         self.screen = pg.display.set_mode(self.screen_size)
         self.running = True
+
         self.image_manager = image_manager
         self.dataset_manager = dataset_manager
+        self.active_learning_manager = active_learning_manager
 
         self.bounding_boxes: List[BoundingBox] = []
         self.drawing = False
@@ -68,6 +71,8 @@ class ImageLabeler:
         self.scale = 1.0
         self.offset = [0, 0]
         self.initialize_image_pos()
+        self.auto_boxes: List[BoundingBox] = []
+        self.auto_label()
         self.moving = False
         self.last_mouse_pos = None
 
@@ -100,6 +105,10 @@ class ImageLabeler:
             (self.screen_size[0] - self.menu_width) / 2 - image.shape[1] * self.scale / 2,
             (self.screen_size[1] - self.menu_height) / 2 - image.shape[0] * self.scale / 2,
         ]
+
+    def auto_label(self):
+        """Automatically label the image with the active learning model and add the boxes to the auto_boxes."""
+        self.auto_boxes = self.active_learning_manager.predict(self.image_manager.load_image())
 
     def event(self):
         """Handle events."""

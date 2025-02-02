@@ -30,6 +30,9 @@ class BoundingBox:
 
         return x_center, y_center, width, height, self.class_id
 
+    def __str__(self):
+        return f'{self.x_min} {self.y_min} {self.x_max} {self.y_max} {self.class_id}'
+
 
 class ClassDescription:
     """Class to manage class names."""

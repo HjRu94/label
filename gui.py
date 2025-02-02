@@ -77,10 +77,10 @@ class ImageLabeler:
         self.last_mouse_pos = None
 
         # Button setup
-        self.buttons = self.dataset_manager.class_description.class_names
+        self.classes = self.dataset_manager.class_description.class_names
         self.current_class = 0
         self.color_manager = ColorManager()
-        self.class_counts = [0 for _ in range(len(self.buttons))]
+        self.class_counts = [0 for _ in range(len(self.classes))]
         self.menu_scroll_offset = 0
 
         self.remove_boxes = False
@@ -132,7 +132,7 @@ class ImageLabeler:
                     self.check_navigation_click(self.mouse_pos)
                 if event.type == pg.MOUSEWHEEL:
                     self.menu_scroll_offset -= event.y * 20
-                    self.menu_scroll_offset = min(self.menu_scroll_offset, len(self.buttons) * 60 - self.screen_size[1] + 70)
+                    self.menu_scroll_offset = min(self.menu_scroll_offset, len(self.classes) * 60 - self.screen_size[1] + 70)
                     self.menu_scroll_offset = max(0, self.menu_scroll_offset)
                 continue
 
@@ -205,7 +205,7 @@ class ImageLabeler:
     def check_button_click(self, pos):
         """Check if a button was clicked."""
         button_height = 50
-        for i, label in enumerate(self.buttons):
+        for i, label in enumerate(self.classes):
             y_offset = 10 + i * (button_height + 10) - self.menu_scroll_offset
             button_rect = pg.Rect(
                 self.screen_size[0] - self.menu_width + 10,
@@ -232,6 +232,7 @@ class ImageLabeler:
             self.bounding_boxes = []
             self.image_manager.next_image()
             self.initialize_image_pos()
+            self.auto_label()
 
     def is_mouse_on_image(self, pos: Tuple[int, int]) -> bool:
         """Return True if the mouse is on the image."""
@@ -288,6 +289,17 @@ class ImageLabeler:
             color = self.color_manager.index_to_color(box.class_id)
             pg.draw.rect(self.screen, color, rect, 2)
 
+        for box in self.auto_boxes:
+            if box.class_id >= len(self.classes):
+                continue
+            rect = (
+                int(box.x_min * self.scale + self.offset[0]),
+                int(box.y_min * self.scale + self.offset[1]),
+                int((box.x_max - box.x_min) * self.scale),
+                int((box.y_max - box.y_min) * self.scale),
+            )
+            pg.draw.rect(self.screen, (255, 0, 0), rect, 2)
+
         if self.current_box:
             rect = (
                 int(self.current_box[0] * self.scale + self.offset[0]),
@@ -303,7 +315,7 @@ class ImageLabeler:
         )
 
         button_height = 50
-        for i, label in enumerate(self.buttons):
+        for i, label in enumerate(self.classes):
             y_offset = 10 + i * (button_height + 10) - self.menu_scroll_offset
             button_rect = pg.Rect(
                 self.screen_size[0] - self.menu_width + 10,

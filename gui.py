@@ -282,10 +282,9 @@ class ImageLabeler:
 
         # Draw class name
         font = pg.font.SysFont(None, 24)
-        text_surface = font.render(self.buttons[box.class_id], True, color)
+        text_surface = font.render(self.classes[box.class_id], True, color)
         text_rect = text_surface.get_rect(center=(rect[0] + rect[2] // 2, rect[1] + rect[3] // 2))
         self.screen.blit(text_surface, text_rect)
-
 
     def draw(self):
         """Draw the image and bounding boxes."""
@@ -317,15 +316,8 @@ class ImageLabeler:
             self.draw_bounding_box(box, color)
 
         for box in self.auto_boxes:
-            if box.class_id >= len(self.classes):
-                continue
-            rect = (
-                int(box.x_min * self.scale + self.offset[0]),
-                int(box.y_min * self.scale + self.offset[1]),
-                int((box.x_max - box.x_min) * self.scale),
-                int((box.y_max - box.y_min) * self.scale),
-            )
-            pg.draw.rect(self.screen, (255, 0, 0), rect, 2)
+            color = (0, 0, 255)
+            self.draw_bounding_box(box, color)
 
         if self.current_box:
             rect = (

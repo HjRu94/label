@@ -173,11 +173,14 @@ class ImageLabeler:
                     x2, y2 = end_pos
                     x, y = min(x1, x2), min(y1, y2)
                     width, height = abs(x2 - x1), abs(y2 - y1)
-                    self.bounding_boxes.append(BoundingBox(x, y, x + width, y + height, self.current_class))
-                    self.class_counts[self.current_class] += 1
+                    box = BoundingBox(x, y, x + width, y + height, self.current_class)
                     self.drawing = False
                     self.start_pos = None
                     self.current_box = None
+                    # Only add boxes with an area greater than 1 pixel
+                    if box.area() > 1:
+                        self.bounding_boxes.append(box)
+                        self.class_counts[self.current_class] += 1
                 elif event.button == 3:
                     self.moving = False
                     self.last_mouse_pos = None
@@ -267,6 +270,23 @@ class ImageLabeler:
             max(0, min(image.shape[0], pos[1]))
         )
 
+    def draw_bounding_box(self, box: BoundingBox, color: Tuple[int, int, int] = (0, 0, 0)):
+        """Draw a bounding box."""
+        rect = (
+            int(box.x_min * self.scale + self.offset[0]),
+            int(box.y_min * self.scale + self.offset[1]),
+            int((box.x_max - box.x_min) * self.scale),
+            int((box.y_max - box.y_min) * self.scale),
+        )
+        pg.draw.rect(self.screen, color, rect, 2)
+
+        # Draw class name
+        font = pg.font.SysFont(None, 24)
+        text_surface = font.render(self.buttons[box.class_id], True, color)
+        text_rect = text_surface.get_rect(center=(rect[0] + rect[2] // 2, rect[1] + rect[3] // 2))
+        self.screen.blit(text_surface, text_rect)
+
+
     def draw(self):
         """Draw the image and bounding boxes."""
         self.screen.fill((255, 255, 255))
@@ -293,14 +313,8 @@ class ImageLabeler:
                 self.offset[1] + top * self.scale
             ))
         for box in self.bounding_boxes:
-            rect = (
-                int(box.x_min * self.scale + self.offset[0]),
-                int(box.y_min * self.scale + self.offset[1]),
-                int((box.x_max - box.x_min) * self.scale),
-                int((box.y_max - box.y_min) * self.scale),
-            )
             color = self.color_manager.index_to_color(box.class_id)
-            pg.draw.rect(self.screen, color, rect, 2)
+            self.draw_bounding_box(box, color)
 
         for box in self.auto_boxes:
             if box.class_id >= len(self.classes):

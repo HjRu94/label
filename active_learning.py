@@ -22,7 +22,7 @@ class ActiveLearningManager:
         YOLO_boxes = predictions.boxes
         for box in YOLO_boxes:
             x_min, y_min, x_max, y_max = box.xyxy.detach().tolist()[0]
-            class_id = box.cls
+            class_id = int(box.cls.detach().item())
             bounding_box = BoundingBox(x_min, y_min, x_max, y_max, class_id)
             boxes.append(bounding_box)
         return boxes

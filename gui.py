@@ -144,10 +144,23 @@ class ImageLabeler:
                                 self.bounding_boxes.remove(box)
                                 self.class_counts[box.class_id] -= 1
                                 break
+                        for box in self.auto_boxes:
+                            if self.is_point_inside(box, self.apply_transform(event.pos)):
+                                self.auto_boxes.remove(box)
+                                break
                     else:
-                        self.drawing = True
-                        self.start_pos = self.apply_transform(event.pos)
-                        self.current_box = None
+                        is_in_auto_box = False
+                        for box in self.auto_boxes:
+                            if self.is_point_inside(box, self.apply_transform(event.pos)):
+                                is_in_auto_box = True
+                                # move box to bounding boxes
+                                self.bounding_boxes.append(box)
+                                self.auto_boxes.remove(box)
+                                break
+                        if not is_in_auto_box:
+                            self.drawing = True
+                            self.start_pos = self.apply_transform(event.pos)
+                            self.current_box = None
                 elif event.button == 3:
                     self.moving = True
                     self.last_mouse_pos = event.pos

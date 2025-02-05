@@ -70,6 +70,8 @@ class DatasetManager:
                  ) -> None:
 
         self.dataset_name = dataset_name
+        # add the file this is run from to the dataset name
+        self.dataset_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.dataset_name)
         self.class_description = class_description
 
         self.include_train = include_train
@@ -84,6 +86,8 @@ class DatasetManager:
 
         self.last_image_paths = []
         self.last_lable_paths = []
+
+        self.data_yaml_path = os.path.join(self.dataset_name, 'data.yaml')
 
     def create_folder_structure(self):
         """
@@ -112,14 +116,14 @@ class DatasetManager:
             os.makedirs(os.path.join(self.dataset_name, 'images', 'test'), exist_ok=True)
             os.makedirs(os.path.join(self.dataset_name, 'labels', 'test'), exist_ok=True)
 
-        with open(os.path.join(self.dataset_name, 'data.yaml'), 'w') as f:
+        with open(self.data_yaml_path, 'w') as f:
             f.write(f'path: {self.dataset_name}\n')
             if self.include_train:
-                f.write('train: images/train\n')
+                f.write(f'train: {self.dataset_name}/images/train\n')
             if self.include_validation:
-                f.write('val: images/validation\n')
+                f.write(f'val: {self.dataset_name}/images/validation\n')
             if self.include_test:
-                f.write('test: images/test\n')
+                f.write(f'test: {self.dataset_name}/images/test\n')
             if self.class_description.n_classes > 0:
                 f.write(f'nc: {self.class_description.n_classes}\n')
                 f.write('names: ')

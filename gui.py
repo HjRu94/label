@@ -47,7 +47,12 @@ class ColorManager:
 
 
 class ImageLabeler:
-    """Class for handeling the gui for labeling images."""
+    """
+    Class for handeling the gui for labeling images.
+
+    also handels a lot of the logic related to triggering
+    the relevant functions in the active learning and dataset manager.
+    """
 
     def __init__(self, image_manager: ImageManager, dataset_manager: DatasetManager, active_learning_manager: ActiveLearningManager, screen_size=(800, 800), default_scale=1.0):
         """Initialize the image labeler."""
@@ -71,8 +76,6 @@ class ImageLabeler:
         self.scale = 1.0
         self.offset = [0, 0]
         self.initialize_image_pos()
-        self.auto_boxes: List[BoundingBox] = []
-        self.auto_label()
         self.moving = False
         self.last_mouse_pos = None
 
@@ -82,6 +85,9 @@ class ImageLabeler:
         self.color_manager = ColorManager()
         self.class_counts = [0 for _ in range(len(self.classes))]
         self.menu_scroll_offset = 0
+
+        self.auto_boxes: List[BoundingBox] = []
+        self.auto_label()
 
         self.remove_boxes = False
 
@@ -109,6 +115,8 @@ class ImageLabeler:
     def auto_label(self):
         """Automatically label the image with the active learning model and add the boxes to the auto_boxes."""
         self.auto_boxes = self.active_learning_manager.predict(self.image_manager.load_image())
+        # sort out boxes that have classes that are not in the class description
+        self.auto_boxes = [box for box in self.auto_boxes if box.class_id < len(self.classes)]
 
     def event(self):
         """Handle events."""
@@ -247,6 +255,9 @@ class ImageLabeler:
             self.dataset_manager.save_image(self.image_manager.load_image(), self.bounding_boxes)
             self.bounding_boxes = []
             self.image_manager.next_image()
+
+            self.active_learning_manager.train(self.dataset_manager)
+
             self.initialize_image_pos()
             self.auto_label()
 

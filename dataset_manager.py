@@ -30,6 +30,10 @@ class BoundingBox:
 
         return x_center, y_center, width, height, self.class_id
 
+    def area(self):
+        """Calculate the area of the bounding box."""
+        return (self.x_max - self.x_min) * (self.y_max - self.y_min)
+
 
 class ClassDescription:
     """Class to manage class names."""

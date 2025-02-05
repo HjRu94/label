@@ -151,11 +151,14 @@ class ImageLabeler:
                     x2, y2 = end_pos
                     x, y = min(x1, x2), min(y1, y2)
                     width, height = abs(x2 - x1), abs(y2 - y1)
-                    self.bounding_boxes.append(BoundingBox(x, y, x + width, y + height, self.current_class))
-                    self.class_counts[self.current_class] += 1
+                    box = BoundingBox(x, y, x + width, y + height, self.current_class)
                     self.drawing = False
                     self.start_pos = None
                     self.current_box = None
+                    # Only add boxes with an area greater than 1 pixel
+                    if box.area() > 1:
+                        self.bounding_boxes.append(box)
+                        self.class_counts[self.current_class] += 1
                 elif event.button == 3:
                     self.moving = False
                     self.last_mouse_pos = None
